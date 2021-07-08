@@ -78,6 +78,7 @@ gradlePlugin {
     plugins {
         create("mojangSpigotRemapper") {
             id = "io.github.patrick.remapper"
+            displayName = "Mojang - Spigot Remapper"
             group = rootProject.group
             implementationClass = "com.github.patrick.gradle.remapper.MojangSpigotRemapperPlugin"
             description = "Gradle plugin for remapping mojang-mapped artifact to spigot-mapped"

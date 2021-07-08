@@ -52,9 +52,7 @@ abstract class RemapTask : DefaultTask() {
                 spigotOutput.delete()
                 println("Successfully obfuscate jar (${project.name})")
             } else {
-                project.logger.warn("Mojang and Spigot mapping should be specified for ${
-                    task.path.dropLast(1).takeLastWhile { it != ':' }
-                }.")
+                project.logger.warn("Mojang and Spigot mapping should be specified for ${project.name}.")
             }
         }
     }

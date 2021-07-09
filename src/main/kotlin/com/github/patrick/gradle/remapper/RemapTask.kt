@@ -20,11 +20,15 @@ abstract class RemapTask : DefaultTask() {
 
     @get:Input
     @get:Optional
-    abstract val classifierName: Property<String>
+    abstract val inputTask: Property<AbstractArchiveTask>
 
     @get:Input
     @get:Optional
-    abstract val inputTask: Property<AbstractArchiveTask>
+    abstract val archiveClassifier: Property<String>
+
+    @get:Input
+    @get:Optional
+    abstract val archiveName: Property<String>
 
     @TaskAction
     fun execute() {
@@ -35,7 +39,9 @@ abstract class RemapTask : DefaultTask() {
             val obfOutput = File(archiveFile.parentFile, "remapped-obf.jar")
             val spigotOutput = File(archiveFile.parentFile, "remapped-spigot.jar")
 
-            val targetFile = classifierName.orNull?.let { classifier ->
+            val targetFile = archiveName.orNull?.let { name ->
+                File(archiveFile.parent, name)
+            } ?: archiveClassifier.orNull?.let { classifier ->
                 File(archiveFile.parent, task.fileNameWithClassifier(classifier))
             } ?: archiveFile
 
@@ -59,7 +65,7 @@ abstract class RemapTask : DefaultTask() {
 
     private companion object {
         private fun AbstractArchiveTask.fileNameWithClassifier(classifier: String): String {
-            return "${archiveBaseName.get()}-${archiveVersion}-$classifier.jar"
+            return "${archiveBaseName.get()}-${archiveVersion.get()}-$classifier.jar"
         }
 
         private fun remap(jarFile: File, outputFile: File, mappingFile: File, reversed: Boolean = false) {

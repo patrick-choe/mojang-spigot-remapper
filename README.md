@@ -12,7 +12,7 @@ Uses [SpecialSource](https://github.com/md-5/SpecialSource) for remapping.
 
 ---
 
-### Applying Plugin
+### Applying plugin
 
 #### Kotlin
 
@@ -122,7 +122,8 @@ tasks {
 ### Additional information
 
 All contributions are welcome!
-If you encounter any problems, or have suggestions, please leave an issue!
+
+If you encounter any problems, or have suggestions, [please leave an issue](https://github.com/patrick-choe/mojang-spigot-remapper/issues)!
 
 Contact me at
 

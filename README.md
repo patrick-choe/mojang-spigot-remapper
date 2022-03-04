@@ -12,6 +12,16 @@ Uses [SpecialSource](https://github.com/md-5/SpecialSource) for remapping.
 
 ---
 
+### Note
+
+For those seeking for nms & stable remapper, try using `userdev` from [PaperMC/paperweight](https://github.com/PaperMC/paperweight) project.
+
+I will not (can not) provide any additional help for additional non-spigot features (incl. support for specific spigot fork)
+
+There would be some methods that do not remap properly, so it is required to find some workarounds for those methods.
+
+---
+
 ### Applying plugin
 
 #### Kotlin
@@ -20,7 +30,7 @@ Using the [plugins DSL](https://docs.gradle.org/current/userguide/plugins.html#s
 
 ```kotlin
 plugins {
-    id("io.github.patrick.remapper") version "1.1.0"
+    id("io.github.patrick.remapper") version "1.1.1"
 }
 ```
 
@@ -35,7 +45,7 @@ buildscript {
         }
     }
     dependencies {
-        classpath("io.github.patrick-choe:mojang-spigot-remapper:1.1.0")
+        classpath("io.github.patrick-choe:mojang-spigot-remapper:1.1.1")
     }
 }
 
@@ -49,7 +59,7 @@ Using the [plugins DSL](https://docs.gradle.org/current/userguide/plugins.html#s
 
 ```groovy
 plugins {
-    id "io.github.patrick.remapper" version "1.1.0"
+    id "io.github.patrick.remapper" version "1.1.1"
 }
 ```
 
@@ -64,7 +74,7 @@ buildscript {
         }
     }
     dependencies {
-        classpath "io.github.patrick-choe:mojang-spigot-remapper:1.1.0"
+        classpath "io.github.patrick-choe:mojang-spigot-remapper:1.1.1"
     }
 }
 

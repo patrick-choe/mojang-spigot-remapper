@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021 PatrickKR
+ * Copyright (C) 2022 PatrickKR
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,25 +20,25 @@ import org.jetbrains.dokka.gradle.DokkaTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    kotlin("jvm") version "1.4.32"
-    id("org.jetbrains.dokka") version "1.4.32"
-    id("com.gradle.plugin-publish") version "0.15.0"
+    kotlin("jvm") version "1.6.10"
+    id("org.jetbrains.dokka") version "1.6.10"
+    id("com.gradle.plugin-publish") version "0.20.0"
     `java-gradle-plugin`
     `maven-publish`
     signing
 }
 
 group = "io.github.patrick-choe"
-version = "1.1.0"
+version = "1.1.1"
 
 repositories {
     mavenCentral()
 }
 
 dependencies {
-    api(kotlin("stdlib-jdk8"))
+    api(kotlin("stdlib"))
 
-    implementation("net.md-5:SpecialSource:1.10.0")
+    implementation("net.md-5:SpecialSource:1.11.0")
 }
 
 tasks {
@@ -52,7 +52,7 @@ tasks {
                 displayName.set(rootProject.name)
                 sourceLink {
                     localDirectory.set(file("src/main/kotlin"))
-                    remoteUrl.set(uri("https://github.com/patrick-choe/${rootProject.name}/tree/master/src/main/kotlin").toURL())
+                    remoteUrl.set(uri("https://github.com/patrick-choe/${rootProject.name}/tree/main/src/main/kotlin").toURL())
                     remoteLineSuffix.set("#L")
                 }
             }
@@ -80,7 +80,7 @@ gradlePlugin {
             id = "io.github.patrick.remapper"
             displayName = "Mojang - Spigot Remapper"
             group = rootProject.group
-            implementationClass = "com.github.patrick.gradle.remapper.MojangSpigotRemapperPlugin"
+            implementationClass = "io.github.patrick.gradle.remapper.MojangSpigotRemapperPlugin"
             description = "Gradle plugin for remapping mojang-mapped artifact to spigot-mapped"
         }
     }

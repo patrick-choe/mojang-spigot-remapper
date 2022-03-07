@@ -30,7 +30,7 @@ Using the [plugins DSL](https://docs.gradle.org/current/userguide/plugins.html#s
 
 ```kotlin
 plugins {
-    id("io.github.patrick.remapper") version "1.1.1"
+    id("io.github.patrick.remapper") version "1.2.0"
 }
 ```
 
@@ -45,7 +45,7 @@ buildscript {
         }
     }
     dependencies {
-        classpath("io.github.patrick-choe:mojang-spigot-remapper:1.1.1")
+        classpath("io.github.patrick-choe:mojang-spigot-remapper:1.2.0")
     }
 }
 
@@ -59,7 +59,7 @@ Using the [plugins DSL](https://docs.gradle.org/current/userguide/plugins.html#s
 
 ```groovy
 plugins {
-    id "io.github.patrick.remapper" version "1.1.1"
+    id "io.github.patrick.remapper" version "1.2.0"
 }
 ```
 
@@ -74,7 +74,7 @@ buildscript {
         }
     }
     dependencies {
-        classpath "io.github.patrick-choe:mojang-spigot-remapper:1.1.1"
+        classpath "io.github.patrick-choe:mojang-spigot-remapper:1.2.0"
     }
 }
 
@@ -86,19 +86,19 @@ apply plugin: "io.github.patrick.remapper"
 
 ### How to use
 
+- Prerequisite: Run BuildTools with `--remapped` option.
 - Setup by applying the plugin to the project. See above for more details.
-   - This will add `spigotMapping` and `mojangMapping` configurations along with `remap` task to the project.
-- Configure `spigotMapping` and `mojangMapping` in dependency handler scope.
+   - This will add `remap` task to the project.
+- Configure `remap` task. Advanced configuration option is available in the below section.
    - Example:
       ```kotlin
-      dependencies {
-          "..."
-          mojangMapping("org.spigotmc:minecraft-server:1.17-R0.1-SNAPSHOT:maps-mojang@txt")
-          spigotMapping("org.spigotmc:minecraft-server:1.17-R0.1-SNAPSHOT:maps-spigot@csrg")
+      tasks {
+          remap {
+              version.set("1.18.1")
+          }
       }
       ```
 - Run `remap` task to remap mojang-mapped jar artifact to spigot-mapped.
-   - Advanced configuration option is available below.
 
 ---
 
@@ -107,6 +107,15 @@ apply plugin: "io.github.patrick.remapper"
 ```kotlin
 tasks {
     remap {
+        // Required
+        // Specify minecraft (spigot) version of your project.
+        // TODO: Auto-detect library version by default
+        version.set("1.18.1")
+
+        // Use this option to change remapping action.
+        // Defaults to `RemapTask.Action.MOJANG_TO_SPIGOT`.
+        action.set(RemapTask.Action.MOJANG_TO_SPIGOT)
+
         // If this option is set to true, the entire task would be skipped.
         skip.set(true)
 
@@ -139,5 +148,26 @@ Contact me at
 
 - Discord: PatrickKR [#] 0645
 - Email: mailpatrickkr [@] gmail.com
+
+---
+
+### Changelog
+
+#### 1.0.0
+ - Initial release
+
+#### 1.1.0
+ - add archiveName, archiveClassifier option
+
+#### 1.1.1
+ - Update library versions
+ - Add note about `userdev`
+
+#### 1.1.2
+ - Fix publication error from v1.1.1
+
+#### 1.2.0
+ - Fix internal implementation of remapping
+ - Change configuration options
 
 ---

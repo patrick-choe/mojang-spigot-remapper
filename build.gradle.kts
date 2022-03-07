@@ -29,7 +29,7 @@ plugins {
 }
 
 group = "io.github.patrick-choe"
-version = "1.1.1"
+version = "1.2.0"
 
 repositories {
     mavenCentral()
@@ -138,7 +138,7 @@ try {
                         developer {
                             id.set("patrick-choe")
                             name.set("PatrickKR")
-                            email.set("mailpatrickkorea@gmail.com")
+                            email.set("mailpatrickkr@gmail.com")
                             url.set("https://github.com/patrick-choe")
                             roles.addAll("developer")
                             timezone.set("Asia/Seoul")

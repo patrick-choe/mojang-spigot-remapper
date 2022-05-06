@@ -23,6 +23,7 @@ import net.md_5.specialsource.provider.JarProvider
 import net.md_5.specialsource.provider.JointProvider
 import org.gradle.api.DefaultTask
 import org.gradle.api.Project
+import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.Optional
@@ -57,6 +58,10 @@ abstract class RemapTask : DefaultTask() {
     @get:Optional
     abstract val archiveName: Property<String>
 
+    @get:Input
+    @get:Optional
+    abstract val archiveDirectory: RegularFileProperty
+
     @TaskAction
     fun execute() {
         if (skip.orNull != true) {
@@ -66,11 +71,12 @@ abstract class RemapTask : DefaultTask() {
             val version =
                 version.orNull ?: throw IllegalStateException("Version should be specified for ${project.path}.")
 
-            val targetFile = archiveName.orNull?.let { name ->
-                File(archiveFile.parent, name)
-            } ?: archiveClassifier.orNull?.let { classifier ->
-                File(archiveFile.parent, task.fileNameWithClassifier(classifier))
-            } ?: archiveFile
+            val targetFile = File(
+                archiveDirectory.orNull?.asFile ?: archiveFile.parentFile,
+                archiveName.orNull ?: archiveClassifier.orNull?.let { classifier ->
+                    task.fileNameWithClassifier(classifier)
+                } ?: archiveFile.name
+            )
 
             var fromFile = archiveFile
             var toFile = Files.createTempFile(null, ".jar").toFile()

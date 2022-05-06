@@ -18,7 +18,7 @@ For those seeking for nms & stable remapper, try using `userdev` from [PaperMC/p
 
 I will not (can not) provide any additional help for additional non-spigot features (incl. support for specific spigot fork)
 
-There would be some methods that do not remap properly, so it is required to find some workarounds for those methods.
+There could be some methods that do not remap properly, so it is required to find some workarounds for those methods.
 
 ---
 
@@ -30,7 +30,7 @@ Using the [plugins DSL](https://docs.gradle.org/current/userguide/plugins.html#s
 
 ```kotlin
 plugins {
-    id("io.github.patrick.remapper") version "1.2.0"
+    id("io.github.patrick.remapper") version "1.3.0"
 }
 ```
 
@@ -45,7 +45,7 @@ buildscript {
         }
     }
     dependencies {
-        classpath("io.github.patrick-choe:mojang-spigot-remapper:1.2.0")
+        classpath("io.github.patrick-choe:mojang-spigot-remapper:1.3.0")
     }
 }
 
@@ -59,7 +59,7 @@ Using the [plugins DSL](https://docs.gradle.org/current/userguide/plugins.html#s
 
 ```groovy
 plugins {
-    id "io.github.patrick.remapper" version "1.2.0"
+    id "io.github.patrick.remapper" version "1.3.0"
 }
 ```
 
@@ -74,7 +74,7 @@ buildscript {
         }
     }
     dependencies {
-        classpath "io.github.patrick-choe:mojang-spigot-remapper:1.2.0"
+        classpath "io.github.patrick-choe:mojang-spigot-remapper:1.3.0"
     }
 }
 
@@ -94,7 +94,7 @@ apply plugin: "io.github.patrick.remapper"
       ```kotlin
       tasks {
           remap {
-              version.set("1.18.1")
+              version.set("1.18.2")
           }
       }
       ```
@@ -110,7 +110,7 @@ tasks {
         // Required
         // Specify minecraft (spigot) version of your project.
         // TODO: Auto-detect library version by default
-        version.set("1.18.1")
+        version.set("1.18.2")
 
         // Use this option to change remapping action.
         // Defaults to `RemapTask.Action.MOJANG_TO_SPIGOT`.
@@ -132,6 +132,10 @@ tasks {
         // the remap output would be available at "${archiveBaseName}-${archiveVersion}-${archiveClassifier}.jar"
         // Note that `archiveName` has higher priority over `archiveClassifier`. 
         archiveClassifier.set("remapped")
+
+        // Use this option to set output directory of remapped archive file.
+        // Defaults to output directory of input task.
+        archiveDirectory.set(File(projectDir, "output"))
     }
 }
 ```
@@ -157,7 +161,7 @@ Contact me at
  - Initial release
 
 #### 1.1.0
- - add archiveName, archiveClassifier option
+ - Add archiveName, archiveClassifier option
 
 #### 1.1.1
  - Update library versions
@@ -169,5 +173,9 @@ Contact me at
 #### 1.2.0
  - Fix internal implementation of remapping
  - Change configuration options
+
+#### 1.3.0
+ - Update library versions
+ - Add archiveDirectory option
 
 ---

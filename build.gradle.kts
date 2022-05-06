@@ -20,16 +20,14 @@ import org.jetbrains.dokka.gradle.DokkaTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    kotlin("jvm") version "1.6.10"
-    id("org.jetbrains.dokka") version "1.6.10"
-    id("com.gradle.plugin-publish") version "0.20.0"
-    `java-gradle-plugin`
-    `maven-publish`
+    kotlin("jvm") version "1.6.21"
+    id("org.jetbrains.dokka") version "1.6.21"
+    id("com.gradle.plugin-publish") version "1.0.0-rc-1"
     signing
 }
 
 group = "io.github.patrick-choe"
-version = "1.2.0"
+version = "1.3.0"
 
 repositories {
     mavenCentral()
@@ -66,7 +64,7 @@ tasks {
 
     create<Jar>("dokkaJar") {
         archiveClassifier.set("javadoc")
-        dependsOn("dokkaHtml")
+        dependsOn(dokkaHtml)
 
         from("$buildDir/dokka/html/") {
             include("**")

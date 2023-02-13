@@ -20,9 +20,9 @@ import org.jetbrains.dokka.gradle.DokkaTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    kotlin("jvm") version "1.6.21"
-    id("org.jetbrains.dokka") version "1.6.21"
-    id("com.gradle.plugin-publish") version "1.0.0-rc-1"
+    kotlin("jvm") version "1.8.10"
+    id("org.jetbrains.dokka") version "1.7.20"
+    id("com.gradle.plugin-publish") version "1.1.0"
     signing
 }
 
@@ -65,6 +65,7 @@ tasks {
     create<Jar>("dokkaJar") {
         archiveClassifier.set("javadoc")
         dependsOn(dokkaHtml)
+        dependsOn("javadocJar")
 
         from("$buildDir/dokka/html/") {
             include("**")
@@ -72,7 +73,14 @@ tasks {
     }
 }
 
+java {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+}
+
 gradlePlugin {
+    website.set("https://github.com/patrick-choe/${rootProject.name}")
+    vcsUrl.set("https://github.com/patrick-choe/${rootProject.name}.git")
     plugins {
         create("mojangSpigotRemapper") {
             id = "io.github.patrick.remapper"
@@ -80,15 +88,9 @@ gradlePlugin {
             group = rootProject.group
             implementationClass = "io.github.patrick.gradle.remapper.MojangSpigotRemapperPlugin"
             description = "Gradle plugin for remapping mojang-mapped artifact to spigot-mapped"
+            tags.set(listOf("kotlin", "special source", "remapper", "mojang", "spigot", "minecraft"))
         }
     }
-}
-
-pluginBundle {
-    description = "Gradle plugin for remapping mojang-mapped artifact to spigot-mapped"
-    website = "https://github.com/patrick-choe/${rootProject.name}"
-    vcsUrl = "https://github.com/patrick-choe/${rootProject.name}.git"
-    tags = listOf("kotlin", "special source", "remapper", "mojang", "spigot", "minecraft")
 }
 
 try {

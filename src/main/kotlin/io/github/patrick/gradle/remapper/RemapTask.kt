@@ -117,7 +117,7 @@ abstract class RemapTask : DefaultTask() {
         })
     }
 
-    enum class Action(vararg val procedures: ActualProcedure) {
+    enum class Action(internal vararg val procedures: ActualProcedure) {
         MOJANG_TO_SPIGOT(ActualProcedure.MOJANG_OBF, ActualProcedure.OBF_SPIGOT),
         MOJANG_TO_OBF(ActualProcedure.MOJANG_OBF),
         OBF_TO_MOJANG(ActualProcedure.OBF_MOJANG),
@@ -126,7 +126,7 @@ abstract class RemapTask : DefaultTask() {
         SPIGOT_TO_OBF(ActualProcedure.SPIGOT_OBF);
     }
 
-    enum class ActualProcedure(
+    internal enum class ActualProcedure(
         private val mapping: (version: String) -> String,
         private val inheritance: (version: String) -> String,
         private val reversed: Boolean = false

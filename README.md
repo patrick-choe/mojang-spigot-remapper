@@ -88,16 +88,16 @@ apply plugin: "io.github.patrick.remapper"
 
 - Prerequisite: Run BuildTools with `--remapped` option.
 - Setup by applying the plugin to the project. See above for more details.
-   - This will add `remap` task to the project.
+    - This will add `remap` task to the project.
 - Configure `remap` task. Advanced configuration option is available in the below section.
-   - Example:
-      ```kotlin
-      tasks {
-          remap {
-              version.set("1.18.2")
-          }
-      }
-      ```
+    - Example:
+       ```kotlin
+       tasks {
+           remap {
+               version.set("1.19.3")
+           }
+       }
+       ```
 - Run `remap` task to remap mojang-mapped jar artifact to spigot-mapped.
 
 ---
@@ -157,31 +157,49 @@ Contact me at
 
 ### Changelog
 
-#### 1.0.0
- - Initial release
-
-#### 1.1.0
- - Add archiveName, archiveClassifier option
-
-#### 1.1.1
- - Update library versions
- - Add note about `userdev`
-
-#### 1.1.2
- - Fix publication error from v1.1.1
-
-#### 1.2.0
- - Fix internal implementation of remapping
- - Change configuration options
-
-#### 1.3.0
- - Update library versions
- - Add archiveDirectory option
-
 #### 1.4.0
- - Update library versions
- - Modify buildscript
- - Change type of `archiveDirectory` option to `DirectoryProperty` (Thanks to [@AlexProgrammerDE](https://github.com/AlexProgrammerDE))
- - Change visibility of `ActualProcedure` to `internal`
+- Update library versions
+- Modify buildscript
+- Change type of `archiveDirectory` option to `DirectoryProperty` (Thanks to [@AlexProgrammerDE](https://github.com/AlexProgrammerDE))
+- Change visibility of `ActualProcedure` to `internal`
+
+<details><summary>1.3.0</summary>
+
+- Update library versions
+- Add archiveDirectory option
+
+</details>
+
+<details><summary>1.2.0</summary>
+
+- Fix internal implementation of remapping
+- Change configuration options
+
+</details>
+
+<details><summary>1.1.2</summary>
+
+- Fix publication error from v1.1.1
+
+</details>
+
+<details><summary>1.1.1</summary>
+
+- Update library versions
+- Add note about `userdev`
+
+</details>
+
+<details><summary>1.1.0</summary>
+
+- Add archiveName, archiveClassifier option
+
+</details>
+
+<details><summary>1.0.0</summary>
+
+- Initial release
+
+</details>
 
 ---

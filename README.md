@@ -30,7 +30,7 @@ Using the [plugins DSL](https://docs.gradle.org/current/userguide/plugins.html#s
 
 ```kotlin
 plugins {
-    id("io.github.patrick.remapper") version "1.3.0"
+    id("io.github.patrick.remapper") version "1.4.0"
 }
 ```
 
@@ -45,7 +45,7 @@ buildscript {
         }
     }
     dependencies {
-        classpath("io.github.patrick-choe:mojang-spigot-remapper:1.3.0")
+        classpath("io.github.patrick-choe:mojang-spigot-remapper:1.4.0")
     }
 }
 
@@ -59,7 +59,7 @@ Using the [plugins DSL](https://docs.gradle.org/current/userguide/plugins.html#s
 
 ```groovy
 plugins {
-    id "io.github.patrick.remapper" version "1.3.0"
+    id "io.github.patrick.remapper" version "1.4.0"
 }
 ```
 
@@ -74,7 +74,7 @@ buildscript {
         }
     }
     dependencies {
-        classpath "io.github.patrick-choe:mojang-spigot-remapper:1.3.0"
+        classpath "io.github.patrick-choe:mojang-spigot-remapper:1.4.0"
     }
 }
 
@@ -110,7 +110,7 @@ tasks {
         // Required
         // Specify minecraft (spigot) version of your project.
         // TODO: Auto-detect library version by default
-        version.set("1.18.2")
+        version.set("1.19.3")
 
         // Use this option to change remapping action.
         // Defaults to `RemapTask.Action.MOJANG_TO_SPIGOT`.
@@ -177,5 +177,11 @@ Contact me at
 #### 1.3.0
  - Update library versions
  - Add archiveDirectory option
+
+#### 1.4.0
+ - Update library versions
+ - Modify buildscript
+ - Change type of `archiveDirectory` option to `DirectoryProperty` (Thanks to [@AlexProgrammerDE](https://github.com/AlexProgrammerDE))
+ - Change visibility of `ActualProcedure` to `internal`
 
 ---

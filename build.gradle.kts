@@ -26,6 +26,12 @@ plugins {
     signing
 }
 
+kotlin {
+    jvmToolchain {
+        languageVersion.set(JavaLanguageVersion.of(8))
+    }
+}
+
 group = "io.github.patrick-choe"
 version = "1.3.0"
 
@@ -57,25 +63,14 @@ tasks {
         }
     }
 
-    create<Jar>("sourcesJar") {
-        archiveClassifier.set("sources")
-        from(sourceSets["main"].allSource)
-    }
-
-    create<Jar>("dokkaJar") {
+    create<Jar>("javadocJar") {
         archiveClassifier.set("javadoc")
         dependsOn(dokkaHtml)
-        dependsOn("javadocJar")
 
         from("$buildDir/dokka/html/") {
             include("**")
         }
     }
-}
-
-java {
-    sourceCompatibility = JavaVersion.VERSION_1_8
-    targetCompatibility = JavaVersion.VERSION_1_8
 }
 
 gradlePlugin {
@@ -98,8 +93,6 @@ try {
         publications {
             create<MavenPublication>("mojangSpigotRemapper") {
                 from(components["java"])
-                artifact(tasks["sourcesJar"])
-                artifact(tasks["dokkaJar"])
 
                 repositories {
                     mavenLocal()
@@ -157,7 +150,5 @@ try {
 
     signing {
         isRequired = true
-        sign(tasks["sourcesJar"], tasks["dokkaJar"], tasks["jar"])
-        sign(publishing.publications["mojangSpigotRemapper"])
     }
 } catch (ignored: MissingPropertyException) {}

@@ -15,7 +15,6 @@
  */
 
 import groovy.lang.MissingPropertyException
-import org.gradle.jvm.tasks.Jar
 import org.jetbrains.dokka.gradle.DokkaTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
@@ -67,7 +66,7 @@ tasks {
         archiveClassifier.set("javadoc")
         dependsOn(dokkaHtml)
 
-        from("$buildDir/dokka/html/") {
+        from(layout.buildDirectory.dir("dokka/html/")) {
             include("**")
         }
     }

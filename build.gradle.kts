@@ -15,14 +15,13 @@
  */
 
 import groovy.lang.MissingPropertyException
-import org.gradle.jvm.tasks.Jar
 import org.jetbrains.dokka.gradle.DokkaTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    kotlin("jvm") version "1.8.10"
-    id("org.jetbrains.dokka") version "1.7.20"
-    id("com.gradle.plugin-publish") version "1.1.0"
+    kotlin("jvm") version "1.9.23"
+    id("org.jetbrains.dokka") version "1.9.20"
+    id("com.gradle.plugin-publish") version "1.2.1"
     signing
 }
 
@@ -33,7 +32,7 @@ kotlin {
 }
 
 group = "io.github.patrick-choe"
-version = "1.4.0"
+version = "1.4.1"
 
 repositories {
     mavenCentral()
@@ -42,7 +41,7 @@ repositories {
 dependencies {
     api(kotlin("stdlib"))
 
-    implementation("net.md-5:SpecialSource:1.11.0")
+    implementation("net.md-5:SpecialSource:1.11.4")
 }
 
 tasks {
@@ -67,7 +66,7 @@ tasks {
         archiveClassifier.set("javadoc")
         dependsOn(dokkaHtml)
 
-        from("$buildDir/dokka/html/") {
+        from(layout.buildDirectory.dir("dokka/html/")) {
             include("**")
         }
     }

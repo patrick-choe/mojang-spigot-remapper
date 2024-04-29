@@ -30,7 +30,7 @@ Using the [plugins DSL](https://docs.gradle.org/current/userguide/plugins.html#s
 
 ```kotlin
 plugins {
-    id("io.github.patrick.remapper") version "1.4.0"
+    id("io.github.patrick.remapper") version "1.4.1"
 }
 ```
 
@@ -45,7 +45,7 @@ buildscript {
         }
     }
     dependencies {
-        classpath("io.github.patrick-choe:mojang-spigot-remapper:1.4.0")
+        classpath("io.github.patrick-choe:mojang-spigot-remapper:1.4.1")
     }
 }
 
@@ -59,7 +59,7 @@ Using the [plugins DSL](https://docs.gradle.org/current/userguide/plugins.html#s
 
 ```groovy
 plugins {
-    id "io.github.patrick.remapper" version "1.4.0"
+    id "io.github.patrick.remapper" version "1.4.1"
 }
 ```
 
@@ -74,7 +74,7 @@ buildscript {
         }
     }
     dependencies {
-        classpath "io.github.patrick-choe:mojang-spigot-remapper:1.4.0"
+        classpath "io.github.patrick-choe:mojang-spigot-remapper:1.4.1"
     }
 }
 
@@ -94,7 +94,7 @@ apply plugin: "io.github.patrick.remapper"
        ```kotlin
        tasks {
            remap {
-               version.set("1.19.3")
+               version.set("1.20.5")
            }
        }
        ```
@@ -110,7 +110,7 @@ tasks {
         // Required
         // Specify minecraft (spigot) version of your project.
         // TODO: Auto-detect library version by default
-        version.set("1.19.3")
+        version.set("1.20.5")
 
         // Use this option to change remapping action.
         // Defaults to `RemapTask.Action.MOJANG_TO_SPIGOT`.
@@ -150,18 +150,25 @@ If you encounter any problems, or have suggestions, [please leave an issue](http
 
 Contact me at
 
-- Discord: PatrickKR [#] 0645
+- Discord: patrickkr
 - Email: mailpatrickkr [@] gmail.com
 
 ---
 
 ### Changelog
 
-#### 1.4.0
+#### 1.4.1
+- Update library versions
+- Fix deprecated gradle features (Thanks to [@gmitch215](https://github.com/gmitch215))
+
+<details><summary>1.4.0</summary>
+
 - Update library versions
 - Modify buildscript
 - Change type of `archiveDirectory` option to `DirectoryProperty` (Thanks to [@AlexProgrammerDE](https://github.com/AlexProgrammerDE))
 - Change visibility of `ActualProcedure` to `internal`
+
+</details>
 
 <details><summary>1.3.0</summary>
 

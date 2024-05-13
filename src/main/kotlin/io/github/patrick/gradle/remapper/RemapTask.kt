@@ -31,8 +31,6 @@ import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.bundling.AbstractArchiveTask
 import java.io.File
-import java.io.OutputStream
-import java.io.PrintStream
 import java.nio.file.Files
 
 abstract class RemapTask : DefaultTask() {
@@ -111,10 +109,6 @@ abstract class RemapTask : DefaultTask() {
         private fun AbstractArchiveTask.fileNameWithClassifier(classifier: String): String {
             return "${archiveBaseName.get()}-${archiveVersion.get()}-$classifier.jar"
         }
-
-        private val nullOutputStream = PrintStream(object : OutputStream() {
-            override fun write(b: Int) {}
-        })
     }
 
     enum class Action(internal vararg val procedures: ActualProcedure) {
@@ -155,15 +149,13 @@ abstract class RemapTask : DefaultTask() {
 
             val mappingFile =
                 project.configurations.detachedConfiguration(dependencies.create(mapping(version))).singleFile
-            val inheritanceFiles =
-                project.configurations.detachedConfiguration(dependencies.create(inheritance(version))).files.toList()
+            val inheritanceFile =
+                project.configurations.detachedConfiguration(dependencies.create(inheritance(version))).apply {
+                    isTransitive = false
+                }.singleFile
 
             Jar.init(jarFile).use { inputJar ->
-                // ignore SS multiple main class err
-                val err = System.err
-                System.setErr(nullOutputStream)
-
-                Jar.init(inheritanceFiles).use { inheritanceJar ->
+                Jar.init(inheritanceFile).use { inheritanceJar ->
                     val mapping = JarMapping()
                     mapping.loadMappings(mappingFile.canonicalPath, reversed, false, null, null)
 
@@ -175,8 +167,6 @@ abstract class RemapTask : DefaultTask() {
                     val mapper = JarRemapper(mapping)
                     mapper.remapJar(inputJar, outputFile)
                 }
-
-                System.setErr(err)
             }
         }
     }

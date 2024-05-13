@@ -30,7 +30,7 @@ Using the [plugins DSL](https://docs.gradle.org/current/userguide/plugins.html#s
 
 ```kotlin
 plugins {
-    id("io.github.patrick.remapper") version "1.4.1"
+    id("io.github.patrick.remapper") version "1.4.2"
 }
 ```
 
@@ -45,7 +45,7 @@ buildscript {
         }
     }
     dependencies {
-        classpath("io.github.patrick-choe:mojang-spigot-remapper:1.4.1")
+        classpath("io.github.patrick-choe:mojang-spigot-remapper:1.4.2")
     }
 }
 
@@ -59,7 +59,7 @@ Using the [plugins DSL](https://docs.gradle.org/current/userguide/plugins.html#s
 
 ```groovy
 plugins {
-    id "io.github.patrick.remapper" version "1.4.1"
+    id "io.github.patrick.remapper" version "1.4.2"
 }
 ```
 
@@ -74,7 +74,7 @@ buildscript {
         }
     }
     dependencies {
-        classpath "io.github.patrick-choe:mojang-spigot-remapper:1.4.1"
+        classpath "io.github.patrick-choe:mojang-spigot-remapper:1.4.2"
     }
 }
 
@@ -157,9 +157,17 @@ Contact me at
 
 ### Changelog
 
-#### 1.4.1
+#### 1.4.2
+
+- Remove transitive dependency inheritance
+- Remove unnecessary error suppressing
+
+<details><summary>1.4.1</summary>
+
 - Update library versions
 - Fix deprecated gradle features (Thanks to [@gmitch215](https://github.com/gmitch215))
+
+</details>
 
 <details><summary>1.4.0</summary>
 

@@ -10,6 +10,8 @@ Gradle plugin for remapping mojang-mapped artifact to spigot-mapped
 
 Uses [SpecialSource](https://github.com/md-5/SpecialSource) for remapping.
 
+**Fully compatible with Gradle's Configuration Cache!**
+
 ---
 
 ### Note
@@ -30,7 +32,7 @@ Using the [plugins DSL](https://docs.gradle.org/current/userguide/plugins.html#s
 
 ```kotlin
 plugins {
-    id("io.github.patrick.remapper") version "1.4.2"
+    id("io.github.patrick.remapper") version "1.5.0"
 }
 ```
 
@@ -45,7 +47,7 @@ buildscript {
         }
     }
     dependencies {
-        classpath("io.github.patrick-choe:mojang-spigot-remapper:1.4.2")
+        classpath("io.github.patrick-choe:mojang-spigot-remapper:1.5.0")
     }
 }
 
@@ -59,7 +61,7 @@ Using the [plugins DSL](https://docs.gradle.org/current/userguide/plugins.html#s
 
 ```groovy
 plugins {
-    id "io.github.patrick.remapper" version "1.4.2"
+    id "io.github.patrick.remapper" version "1.5.0"
 }
 ```
 
@@ -74,7 +76,7 @@ buildscript {
         }
     }
     dependencies {
-        classpath "io.github.patrick-choe:mojang-spigot-remapper:1.4.2"
+        classpath "io.github.patrick-choe:mojang-spigot-remapper:1.5.0"
     }
 }
 
@@ -109,7 +111,6 @@ tasks {
     remap {
         // Required
         // Specify minecraft (spigot) version of your project.
-        // TODO: Auto-detect library version by default
         version.set("1.20.5")
 
         // Use this option to change remapping action.
@@ -119,9 +120,12 @@ tasks {
         // If this option is set to true, the entire task would be skipped.
         skip.set(true)
 
-        // Use this option to explicitly set the input task.
-        // Defaults to `jar` task.
-        inputTask.set(jar)
+        // Use this option to explicitly set the input file (configuration cache compatible).
+        // Defaults to the output of the `jar` task.
+        inputFile.set(tasks.jar.flatMap { it.archiveFile })
+        
+        // For tasks other than jar (e.g., shadowJar), use:
+        inputFile.set(tasks.shadowJar.flatMap { it.archiveFile })
 
         // If this option is used, instead of overwriting an existing artifact,
         // the remap output would be available at file named as `archiveName`.
@@ -134,9 +138,29 @@ tasks {
         archiveClassifier.set("remapped")
 
         // Use this option to set output directory of remapped archive file.
-        // Defaults to output directory of input task.
-        archiveDirectory.set(File(projectDir, "output"))
+        // Defaults to build/libs directory.
+        archiveDirectory.set(layout.projectDirectory.dir("output"))
     }
+}
+```
+
+---
+
+### Migration from 1.4.x
+
+The `inputTask` property has been replaced with `inputFile` for configuration cache compatibility.
+
+**Before (1.4.x):**
+```kotlin
+tasks.remap {
+    inputTask.set(tasks.shadowJar)
+}
+```
+
+**After (1.5.0+):**
+```kotlin
+tasks.remap {
+    inputFile.set(tasks.shadowJar.flatMap { it.archiveFile })
 }
 ```
 
@@ -157,10 +181,23 @@ Contact me at
 
 ### Changelog
 
-#### 1.4.2
+#### 1.5.0
+
+- **Configuration Cache Support**: Full compatibility with Gradle's configuration cache
+- Modernized to Kotlin 2.0 and Gradle 8.11
+- Replaced `inputTask` property with `inputFile` for configuration cache compatibility
+- Added proper lazy configuration for mapping file resolution
+- Added KDoc documentation
+- Bumped minimum Java version to 11
+- Improved error messages and validation
+- Plugin now automatically adds Spigot repository
+
+<details><summary>1.4.2</summary>
 
 - Remove transitive dependency inheritance
 - Remove unnecessary error suppressing
+
+</details>
 
 <details><summary>1.4.1</summary>
 

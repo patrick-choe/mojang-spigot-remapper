@@ -22,152 +22,290 @@ import net.md_5.specialsource.JarRemapper
 import net.md_5.specialsource.provider.JarProvider
 import net.md_5.specialsource.provider.JointProvider
 import org.gradle.api.DefaultTask
-import org.gradle.api.Project
+import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.DirectoryProperty
+import org.gradle.api.file.ProjectLayout
+import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.provider.Property
-import org.gradle.api.tasks.Input
-import org.gradle.api.tasks.InputDirectory
-import org.gradle.api.tasks.Optional
-import org.gradle.api.tasks.TaskAction
-import org.gradle.api.tasks.bundling.AbstractArchiveTask
+import org.gradle.api.tasks.*
 import java.io.File
 import java.nio.file.Files
+import javax.inject.Inject
 
-abstract class RemapTask : DefaultTask() {
+/**
+ * Task for remapping JAR files between different mapping types (Mojang, Spigot, Obfuscated).
+ *
+ * This task is fully compatible with Gradle's configuration cache.
+ *
+ * Example usage:
+ * ```kotlin
+ * tasks.remap {
+ *     version.set("1.20.4")
+ *     inputFile.set(tasks.jar.flatMap { it.archiveFile })
+ *     archiveClassifier.set("remapped")
+ * }
+ * ```
+ */
+abstract class RemapTask @Inject constructor(
+    private val layout: ProjectLayout
+) : DefaultTask() {
+
+    /**
+     * The Minecraft version to use for mapping resolution.
+     * This is required and must be set.
+     */
     @get:Input
     abstract val version: Property<String>
 
+    /**
+     * The remapping action to perform.
+     * Defaults to [Action.MOJANG_TO_SPIGOT].
+     */
     @get:Input
     @get:Optional
     abstract val action: Property<Action>
 
+    /**
+     * Whether to skip this task.
+     * Defaults to false.
+     */
     @get:Input
     @get:Optional
     abstract val skip: Property<Boolean>
 
-    @get:Input
-    @get:Optional
-    abstract val inputTask: Property<AbstractArchiveTask>
+    /**
+     * The input JAR file to remap.
+     * This should be set to the archive file of a JAR task.
+     */
+    @get:InputFile
+    abstract val inputFile: RegularFileProperty
 
+    /**
+     * Optional classifier to append to the output file name.
+     * If set, the output will be named `{baseName}-{version}-{classifier}.jar`.
+     */
     @get:Input
     @get:Optional
     abstract val archiveClassifier: Property<String>
 
+    /**
+     * Optional explicit name for the output archive.
+     * Takes precedence over [archiveClassifier].
+     */
     @get:Input
     @get:Optional
     abstract val archiveName: Property<String>
 
-    @get:InputDirectory
+    /**
+     * Optional directory for the output archive.
+     * Defaults to the build/libs directory.
+     */
     @get:Optional
+    @get:OutputDirectory
     abstract val archiveDirectory: DirectoryProperty
+
+    /**
+     * Collection of mapping files to use for remapping.
+     * These are resolved based on the [version] and [action] at configuration time.
+     */
+    @get:InputFiles
+    abstract val mappingFiles: ConfigurableFileCollection
+
+    /**
+     * Collection of inheritance provider files (JAR files) to use for remapping.
+     * These are resolved based on the [version] and [action] at configuration time.
+     */
+    @get:InputFiles
+    abstract val inheritanceFiles: ConfigurableFileCollection
+
+    /**
+     * The output file. This is automatically computed based on input file,
+     * classifier, and output directory settings.
+     */
+    @get:OutputFile
+    abstract val outputFile: RegularFileProperty
+
+    /**
+     * Project name for logging purposes.
+     * Set automatically by the plugin.
+     */
+    @get:Internal
+    abstract val projectName: Property<String>
+
+    init {
+        group = "build"
+        description = "Remaps JAR from one mapping type to another"
+
+        // Set up conventional output file location
+        outputFile.convention(
+            inputFile.flatMap { input ->
+                val baseName = input.asFile.nameWithoutExtension
+                val extension = input.asFile.extension.ifEmpty { "jar" }
+
+                val fileName = archiveName.orElse(
+                    archiveClassifier.map { classifier ->
+                        "$baseName-$classifier.$extension"
+                    }.orElse(input.asFile.name)
+                )
+
+                archiveDirectory.map { dir ->
+                    dir.file(fileName.get())
+                }.orElse(
+                    layout.buildDirectory.file("libs/${fileName.get()}")
+                )
+            }
+        )
+    }
 
     @TaskAction
     fun execute() {
-        if (skip.orNull != true) {
-            val task = inputTask.orNull ?: project.tasks.named("jar").get() as AbstractArchiveTask
-            val archiveFile = task.archiveFile.get().asFile
+        if (skip.getOrElse(false)) {
+            logger.lifecycle("Skipping remap task for ${projectName.getOrElse("unknown")}")
+            return
+        }
 
-            val version =
-                version.orNull ?: throw IllegalStateException("Version should be specified for ${project.path}.")
+        val inputJarFile = inputFile.get().asFile
+        val targetFile = outputFile.get().asFile
 
-            val targetFile = File(
-                archiveDirectory.orNull?.asFile ?: archiveFile.parentFile,
-                archiveName.orNull ?: archiveClassifier.orNull?.let { classifier ->
-                    task.fileNameWithClassifier(classifier)
-                } ?: archiveFile.name
+        if (!inputJarFile.exists()) {
+            throw IllegalStateException("Input file does not exist: $inputJarFile")
+        }
+
+        val remapAction = action.getOrElse(Action.MOJANG_TO_SPIGOT)
+        val procedures = remapAction.procedures
+        val mappingFilesList = mappingFiles.files.toList()
+        val inheritanceFilesList = inheritanceFiles.files.toList()
+
+        if (mappingFilesList.size != procedures.size) {
+            throw IllegalStateException(
+                "Expected ${procedures.size} mapping files for action $remapAction, but got ${mappingFilesList.size}. " +
+                        "Make sure mappingFiles is configured correctly."
             )
+        }
 
-            var fromFile = archiveFile
-            var toFile = Files.createTempFile(null, ".jar").toFile()
+        if (inheritanceFilesList.size != procedures.size) {
+            throw IllegalStateException(
+                "Expected ${procedures.size} inheritance files for action $remapAction, but got ${inheritanceFilesList.size}. " +
+                        "Make sure inheritanceFiles is configured correctly."
+            )
+        }
 
-            val action = action.getOrElse(Action.MOJANG_TO_SPIGOT)
-            val iterator = action.procedures.iterator()
-            var shouldRemove = false
-            while (iterator.hasNext()) {
-                val procedure = iterator.next()
-                procedure.remap(project, version, fromFile, toFile)
+        var fromFile = inputJarFile
+        var toFile = Files.createTempFile("remap", ".jar").toFile()
+        var shouldDeleteFrom = false
 
-                if (shouldRemove) {
+        try {
+            for (i in procedures.indices) {
+                val procedure = procedures[i]
+                val mappingFile = mappingFilesList[i]
+                val inheritanceFile = inheritanceFilesList[i]
+
+                remap(procedure, mappingFile, inheritanceFile, fromFile, toFile)
+
+                if (shouldDeleteFrom) {
                     fromFile.delete()
-
                 }
 
-                if (iterator.hasNext()) {
+                if (i < procedures.size - 1) {
                     fromFile = toFile
-                    toFile = Files.createTempFile(null, ".jar").toFile()
-                    shouldRemove = true
+                    toFile = Files.createTempFile("remap", ".jar").toFile()
+                    shouldDeleteFrom = true
                 }
             }
 
-            toFile.copyTo(targetFile, true)
-            toFile.delete()
-            println("Successfully obfuscate jar (${project.name}, $action)")
+            targetFile.parentFile?.mkdirs()
+            toFile.copyTo(targetFile, overwrite = true)
+            logger.lifecycle("Successfully remapped JAR (${projectName.getOrElse("unknown")}, $remapAction) -> $targetFile")
+        } finally {
+            // Clean up temp file
+            if (toFile.exists() && toFile != targetFile) {
+                toFile.delete()
+            }
         }
     }
 
-    private companion object {
-        private fun AbstractArchiveTask.fileNameWithClassifier(classifier: String): String {
-            return "${archiveBaseName.get()}-${archiveVersion.get()}-$classifier.jar"
+    private fun remap(
+        procedure: Procedure,
+        mappingFile: File,
+        inheritanceFile: File,
+        jarFile: File,
+        outputFile: File
+    ) {
+        Jar.init(jarFile).use { inputJar ->
+            Jar.init(inheritanceFile).use { inheritanceJar ->
+                val mapping = JarMapping()
+                mapping.loadMappings(mappingFile.canonicalPath, procedure.reversed, false, null, null)
+
+                val provider = JointProvider()
+                provider.add(JarProvider(inputJar))
+                provider.add(JarProvider(inheritanceJar))
+                mapping.setFallbackInheritanceProvider(provider)
+
+                val mapper = JarRemapper(mapping)
+                mapper.remapJar(inputJar, outputFile)
+            }
         }
     }
 
-    enum class Action(internal vararg val procedures: ActualProcedure) {
-        MOJANG_TO_SPIGOT(ActualProcedure.MOJANG_OBF, ActualProcedure.OBF_SPIGOT),
-        MOJANG_TO_OBF(ActualProcedure.MOJANG_OBF),
-        OBF_TO_MOJANG(ActualProcedure.OBF_MOJANG),
-        OBF_TO_SPIGOT(ActualProcedure.OBF_SPIGOT),
-        SPIGOT_TO_MOJANG(ActualProcedure.SPIGOT_OBF, ActualProcedure.OBF_MOJANG),
-        SPIGOT_TO_OBF(ActualProcedure.SPIGOT_OBF);
+    /**
+     * Available remapping actions.
+     */
+    enum class Action(internal vararg val procedures: Procedure) {
+        /** Remap from Mojang mappings to Spigot mappings (most common use case) */
+        MOJANG_TO_SPIGOT(Procedure.MOJANG_OBF, Procedure.OBF_SPIGOT),
+
+        /** Remap from Mojang mappings to obfuscated */
+        MOJANG_TO_OBF(Procedure.MOJANG_OBF),
+
+        /** Remap from obfuscated to Mojang mappings */
+        OBF_TO_MOJANG(Procedure.OBF_MOJANG),
+
+        /** Remap from obfuscated to Spigot mappings */
+        OBF_TO_SPIGOT(Procedure.OBF_SPIGOT),
+
+        /** Remap from Spigot mappings to Mojang mappings */
+        SPIGOT_TO_MOJANG(Procedure.SPIGOT_OBF, Procedure.OBF_MOJANG),
+
+        /** Remap from Spigot mappings to obfuscated */
+        SPIGOT_TO_OBF(Procedure.SPIGOT_OBF);
     }
 
-    internal enum class ActualProcedure(
-        private val mapping: (version: String) -> String,
-        private val inheritance: (version: String) -> String,
-        private val reversed: Boolean = false
+    /**
+     * Individual remapping procedures with their mapping coordinates.
+     */
+    enum class Procedure(
+        /** Maven coordinate function for the mapping file */
+        val mappingCoordinate: (version: String) -> String,
+        /** Maven coordinate function for the inheritance provider JAR */
+        val inheritanceCoordinate: (version: String) -> String,
+        /** Whether to reverse the mapping direction */
+        val reversed: Boolean = false
     ) {
         MOJANG_OBF(
-            { version -> "org.spigotmc:minecraft-server:$version-R0.1-SNAPSHOT:maps-mojang@txt" },
-            { version -> "org.spigotmc:spigot:$version-R0.1-SNAPSHOT:remapped-mojang" },
-            true
+            mappingCoordinate = { version -> "org.spigotmc:minecraft-server:$version-R0.1-SNAPSHOT:maps-mojang@txt" },
+            inheritanceCoordinate = { version -> "org.spigotmc:spigot:$version-R0.1-SNAPSHOT:remapped-mojang" },
+            reversed = true
         ),
         OBF_MOJANG(
-            { version -> "org.spigotmc:minecraft-server:$version-R0.1-SNAPSHOT:maps-mojang@txt" },
-            { version -> "org.spigotmc:spigot:$version-R0.1-SNAPSHOT:remapped-obf" }
+            mappingCoordinate = { version -> "org.spigotmc:minecraft-server:$version-R0.1-SNAPSHOT:maps-mojang@txt" },
+            inheritanceCoordinate = { version -> "org.spigotmc:spigot:$version-R0.1-SNAPSHOT:remapped-obf" }
         ),
         SPIGOT_OBF(
-            { version -> "org.spigotmc:minecraft-server:$version-R0.1-SNAPSHOT:maps-spigot@csrg" },
-            { version -> "org.spigotmc:spigot:$version-R0.1-SNAPSHOT" },
-            true
+            mappingCoordinate = { version -> "org.spigotmc:minecraft-server:$version-R0.1-SNAPSHOT:maps-spigot@csrg" },
+            inheritanceCoordinate = { version -> "org.spigotmc:spigot:$version-R0.1-SNAPSHOT" },
+            reversed = true
         ),
         OBF_SPIGOT(
-            { version -> "org.spigotmc:minecraft-server:$version-R0.1-SNAPSHOT:maps-spigot@csrg" },
-            { version -> "org.spigotmc:spigot:$version-R0.1-SNAPSHOT:remapped-obf" }
+            mappingCoordinate = { version -> "org.spigotmc:minecraft-server:$version-R0.1-SNAPSHOT:maps-spigot@csrg" },
+            inheritanceCoordinate = { version -> "org.spigotmc:spigot:$version-R0.1-SNAPSHOT:remapped-obf" }
         );
-
-        fun remap(project: Project, version: String, jarFile: File, outputFile: File) {
-            val dependencies = project.dependencies
-
-            val mappingFile =
-                project.configurations.detachedConfiguration(dependencies.create(mapping(version))).singleFile
-            val inheritanceFile =
-                project.configurations.detachedConfiguration(dependencies.create(inheritance(version))).apply {
-                    isTransitive = false
-                }.singleFile
-
-            Jar.init(jarFile).use { inputJar ->
-                Jar.init(inheritanceFile).use { inheritanceJar ->
-                    val mapping = JarMapping()
-                    mapping.loadMappings(mappingFile.canonicalPath, reversed, false, null, null)
-
-                    val provider = JointProvider()
-                    provider.add(JarProvider(inputJar))
-                    provider.add(JarProvider(inheritanceJar))
-                    mapping.setFallbackInheritanceProvider(provider)
-
-                    val mapper = JarRemapper(mapping)
-                    mapper.remapJar(inputJar, outputFile)
-                }
-            }
-        }
     }
+
 }
+
+/**
+ * Kept for backwards compatibility.
+ * @see RemapTask.Procedure
+ */
+@Deprecated("Use RemapTask.Procedure instead", ReplaceWith("RemapTask.Procedure"))
+typealias ActualProcedure = RemapTask.Procedure

@@ -30,7 +30,7 @@ Using the [plugins DSL](https://docs.gradle.org/current/userguide/plugins.html#s
 
 ```kotlin
 plugins {
-    id("io.github.patrick.remapper") version "1.4.2"
+    id("io.github.patrick.remapper") version "1.4.3"
 }
 ```
 
@@ -45,7 +45,7 @@ buildscript {
         }
     }
     dependencies {
-        classpath("io.github.patrick-choe:mojang-spigot-remapper:1.4.2")
+        classpath("io.github.patrick-choe:mojang-spigot-remapper:1.4.3")
     }
 }
 
@@ -59,7 +59,7 @@ Using the [plugins DSL](https://docs.gradle.org/current/userguide/plugins.html#s
 
 ```groovy
 plugins {
-    id "io.github.patrick.remapper" version "1.4.2"
+    id "io.github.patrick.remapper" version "1.4.3"
 }
 ```
 
@@ -74,7 +74,7 @@ buildscript {
         }
     }
     dependencies {
-        classpath "io.github.patrick-choe:mojang-spigot-remapper:1.4.2"
+        classpath "io.github.patrick-choe:mojang-spigot-remapper:1.4.3"
     }
 }
 
@@ -109,6 +109,7 @@ tasks {
     remap {
         // Required
         // Specify minecraft (spigot) version of your project.
+        // Specifying snapshot revision is also allowed (e.g. "1.21.11-R0.2-SNAPSHOT")
         // TODO: Auto-detect library version by default
         version.set("1.20.5")
 
@@ -157,10 +158,18 @@ Contact me at
 
 ### Changelog
 
-#### 1.4.2
+#### 1.4.3
+
+- Update library versions
+- Support versions with specific snapshot revision
+- Remove signing & maven central publishing
+
+<details><summary>1.4.2</summary>
 
 - Remove transitive dependency inheritance
 - Remove unnecessary error suppressing
+
+</details>
 
 <details><summary>1.4.1</summary>
 

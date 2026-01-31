@@ -14,15 +14,13 @@
  * limitations under the License.
  */
 
-import groovy.lang.MissingPropertyException
 import org.jetbrains.dokka.gradle.DokkaTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    kotlin("jvm") version "1.9.23"
+    kotlin("jvm") version "1.9.25"
     id("org.jetbrains.dokka") version "1.9.20"
-    id("com.gradle.plugin-publish") version "1.2.1"
-    signing
+    id("com.gradle.plugin-publish") version "2.0.0"
 }
 
 kotlin {
@@ -32,7 +30,7 @@ kotlin {
 }
 
 group = "io.github.patrick-choe"
-version = "1.4.2"
+version = "1.4.3"
 
 repositories {
     mavenCentral()
@@ -41,7 +39,7 @@ repositories {
 dependencies {
     api(kotlin("stdlib"))
 
-    implementation("net.md-5:SpecialSource:1.11.4")
+    implementation("net.md-5:SpecialSource:1.11.5")
 }
 
 tasks {
@@ -87,67 +85,44 @@ gradlePlugin {
     }
 }
 
-try {
-    publishing {
-        publications {
-            create<MavenPublication>("mojangSpigotRemapper") {
-                from(components["java"])
+publishing {
+    publications {
+        create<MavenPublication>("mojangSpigotRemapper") {
+            from(components["java"])
 
-                repositories {
-                    mavenLocal()
+            repositories {
+                mavenLocal()
+            }
 
-                    maven {
-                        name = "central"
+            pom {
+                name.set(rootProject.name)
+                description.set("Gradle plugin for remapping mojang-mapped artifact to spigot-mapped")
+                url.set("https://github.com/patrick-choe/${rootProject.name}")
 
-                        credentials {
-                            val nexusUsername: String by project
-                            val nexusPassword: String by project
-                            username = nexusUsername
-                            password = nexusPassword
-                        }
-
-                        url = uri(if (version.endsWith("SNAPSHOT")) {
-                            "https://s01.oss.sonatype.org/content/repositories/snapshots/"
-                        } else {
-                            "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
-                        })
+                licenses {
+                    license {
+                        name.set("Apache License, Version 2.0")
+                        url.set("https://www.apache.org/licenses/LICENSE-2.0")
                     }
                 }
 
-                pom {
-                    name.set(rootProject.name)
-                    description.set("Gradle plugin for remapping mojang-mapped artifact to spigot-mapped")
+                developers {
+                    developer {
+                        id.set("patrick-choe")
+                        name.set("PatrickKR")
+                        email.set("mailpatrickkr@gmail.com")
+                        url.set("https://github.com/patrick-choe")
+                        roles.addAll("developer")
+                        timezone.set("Asia/Seoul")
+                    }
+                }
+
+                scm {
+                    connection.set("scm:git:git://github.com/patrick-choe/${rootProject.name}.git")
+                    developerConnection.set("scm:git:ssh://github.com:patrick-choe/${rootProject.name}.git")
                     url.set("https://github.com/patrick-choe/${rootProject.name}")
-
-                    licenses {
-                        license {
-                            name.set("Apache License, Version 2.0")
-                            url.set("https://www.apache.org/licenses/LICENSE-2.0")
-                        }
-                    }
-
-                    developers {
-                        developer {
-                            id.set("patrick-choe")
-                            name.set("PatrickKR")
-                            email.set("mailpatrickkr@gmail.com")
-                            url.set("https://github.com/patrick-choe")
-                            roles.addAll("developer")
-                            timezone.set("Asia/Seoul")
-                        }
-                    }
-
-                    scm {
-                        connection.set("scm:git:git://github.com/patrick-choe/${rootProject.name}.git")
-                        developerConnection.set("scm:git:ssh://github.com:patrick-choe/${rootProject.name}.git")
-                        url.set("https://github.com/patrick-choe/${rootProject.name}")
-                    }
                 }
             }
         }
     }
-
-    signing {
-        isRequired = true
-    }
-} catch (ignored: MissingPropertyException) {}
+}

@@ -67,8 +67,14 @@ abstract class RemapTask : DefaultTask() {
             val task = inputTask.orNull ?: project.tasks.named("jar").get() as AbstractArchiveTask
             val archiveFile = task.archiveFile.get().asFile
 
-            val version =
+            val versionString =
                 version.orNull ?: throw IllegalStateException("Version should be specified for ${project.path}.")
+
+            val version = if (versionString.endsWith("-SNAPSHOT")) {
+                versionString
+            } else {
+                "$versionString-R0.1-SNAPSHOT"
+            }
 
             val targetFile = File(
                 archiveDirectory.orNull?.asFile ?: archiveFile.parentFile,
@@ -126,22 +132,22 @@ abstract class RemapTask : DefaultTask() {
         private val reversed: Boolean = false
     ) {
         MOJANG_OBF(
-            { version -> "org.spigotmc:minecraft-server:$version-R0.1-SNAPSHOT:maps-mojang@txt" },
-            { version -> "org.spigotmc:spigot:$version-R0.1-SNAPSHOT:remapped-mojang" },
+            { version -> "org.spigotmc:minecraft-server:$version:maps-mojang@txt" },
+            { version -> "org.spigotmc:spigot:$version:remapped-mojang" },
             true
         ),
         OBF_MOJANG(
-            { version -> "org.spigotmc:minecraft-server:$version-R0.1-SNAPSHOT:maps-mojang@txt" },
-            { version -> "org.spigotmc:spigot:$version-R0.1-SNAPSHOT:remapped-obf" }
+            { version -> "org.spigotmc:minecraft-server:$version:maps-mojang@txt" },
+            { version -> "org.spigotmc:spigot:$version:remapped-obf" }
         ),
         SPIGOT_OBF(
-            { version -> "org.spigotmc:minecraft-server:$version-R0.1-SNAPSHOT:maps-spigot@csrg" },
-            { version -> "org.spigotmc:spigot:$version-R0.1-SNAPSHOT" },
+            { version -> "org.spigotmc:minecraft-server:$version:maps-spigot@csrg" },
+            { version -> "org.spigotmc:spigot:$version" },
             true
         ),
         OBF_SPIGOT(
-            { version -> "org.spigotmc:minecraft-server:$version-R0.1-SNAPSHOT:maps-spigot@csrg" },
-            { version -> "org.spigotmc:spigot:$version-R0.1-SNAPSHOT:remapped-obf" }
+            { version -> "org.spigotmc:minecraft-server:$version:maps-spigot@csrg" },
+            { version -> "org.spigotmc:spigot:$version:remapped-obf" }
         );
 
         fun remap(project: Project, version: String, jarFile: File, outputFile: File) {
